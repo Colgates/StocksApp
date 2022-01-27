@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 final class APICaller {
     static let shared = APICaller()
@@ -25,10 +26,28 @@ final class APICaller {
         request(url: url(for: .search, queryParams: ["q" : safeQuery]), expecting: SearchResponse.self, completion: completion)
     }
     
+    public func news(for type: NewsViewController.`Type`, completion: @escaping (Result<[NewsStory], Error>) -> Void) {
+        switch type {
+        case .topStories:
+            request(url: url(for: .topStories, queryParams: ["category" : "general"]), expecting: [NewsStory].self, completion: completion)
+        case .company(let symbol):
+            let today = Date()
+            let oneWeekBack = today.addingTimeInterval(-(3600 * 24 * 7))
+            request(url: url(for: .companyNews, queryParams: [
+                "symbol" : symbol,
+                "from" : DateFormatter.newsDateFormatter.string(from: oneWeekBack),
+                "to" : DateFormatter.newsDateFormatter.string(from: today)]),
+                    expecting: [NewsStory].self,
+                    completion: completion)
+        }
+    }
+    
     // MARK: - Private
     
     private enum Endpoint: String {
         case search
+        case topStories = "news"
+        case companyNews = "company-news"
     }
     
     private enum APIError: Error {
@@ -46,7 +65,7 @@ final class APICaller {
         queryItems.append(.init(name: "token", value: Constants.apiKey))
         
         urlString += "?" + queryItems.map { "\($0.name)=\($0.value ?? "")"}.joined(separator: "&")
-        print("\n\(urlString)\n")
+//        print("\n\(urlString)\n")
         return URL(string: urlString)
     }
 
