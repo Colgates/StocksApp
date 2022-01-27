@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="appstore" translatesAutoresizingMaskIntoConstraints="NO" id="6QK-m4-vBj">
-                                <rect key="frame" x="20" y="261" width="374" height="374"/>
+                                <rect key="frame" x="50" y="291" width="314" height="314"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="6QK-m4-vBj" secondAttribute="height" multiplier="1:1" id="dP7-3h-HPr"/>
                                 </constraints>
@@ -27,8 +27,8 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="6QK-m4-vBj" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="TvW-cB-0PX"/>
-                            <constraint firstItem="6QK-m4-vBj" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" constant="20" id="VAS-Np-SbB"/>
-                            <constraint firstAttribute="trailing" secondItem="6QK-m4-vBj" secondAttribute="trailing" constant="20" id="aXH-GL-9H5"/>
+                            <constraint firstItem="6QK-m4-vBj" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" constant="50" id="VAS-Np-SbB"/>
+                            <constraint firstAttribute="trailing" secondItem="6QK-m4-vBj" secondAttribute="trailing" constant="50" id="aXH-GL-9H5"/>
                         </constraints>
                     </view>
                 </viewController>
