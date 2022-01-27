@@ -5,6 +5,7 @@
 //  Created by Evgenii Kolgin on 27.01.2022.
 //
 
+import SDWebImage
 import UIKit
 
 class NewsStoryTableViewCell: UITableViewCell {
@@ -52,7 +53,6 @@ class NewsStoryTableViewCell: UITableViewCell {
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 6
         imageView.layer.masksToBounds = true
-        imageView.backgroundColor = .red
         return imageView
     }()
     
@@ -92,6 +92,6 @@ class NewsStoryTableViewCell: UITableViewCell {
         sourceLabel.text = viewModel.source
         headlineLabel.text = viewModel.headline
         dateLabel.text = viewModel.dateString
-        storyImageView.setImage(with: viewModel.imageURL)
+        storyImageView.sd_setImage(with: viewModel.imageURL, completed: nil)
     }
 }

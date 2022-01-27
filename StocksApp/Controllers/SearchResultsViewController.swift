@@ -23,6 +23,7 @@ class SearchResultsViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: SearchResultTableViewCell.identifier)
         return tableView
     }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .red

@@ -14,12 +14,23 @@ class WatchListViewController: UIViewController {
     
     private var panel: FloatingPanelController?
     
+    private var watchlistMap: [String : [String]] = [:]
+    
+    private let tableView: UITableView = {
+        let tableView = UITableView()
+//        tableView.isHidden = true
+//        tableView.register(UITableViewCell.self, forCellReuseIdentifier: SearchResultTableViewCell.identifier)
+        return tableView
+    }()
+    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpSearchController()
+        setUpTableView()
+        setUpWatchlistData()
         setUpTitleView()
         setUpFloatingPanel()
     }
@@ -31,6 +42,22 @@ class WatchListViewController: UIViewController {
         let searchVC = UISearchController(searchResultsController: resultVC)
         searchVC.searchResultsUpdater = self
         navigationItem.searchController = searchVC
+    }
+    
+    private func setUpTableView() {
+        view.addSubviews(tableView)
+        tableView.dataSource = self
+        tableView.delegate = self
+    }
+    
+    private func setUpWatchlistData() {
+        let symbols = PersistenceManager.shared.watchList
+        
+        for symbol in symbols {
+            watchlistMap[symbol] = ["some string"]
+        }
+        
+        tableView.reloadData()
     }
     
     private func setUpTitleView() {
@@ -100,5 +127,34 @@ extension WatchListViewController: FloatingPanelControllerDelegate {
     func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
         navigationItem.titleView?.isHidden = fpc.state == .full
         navigationItem.searchController?.searchBar.isHidden = fpc.state == .full
+    }
+}
+
+// MARK: - UITableViewDataSource
+
+extension WatchListViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        results.count
+        0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultTableViewCell.identifier, for: indexPath)
+//        let model = results[indexPath.row]
+//        var configuration = cell.defaultContentConfiguration()
+//        configuration.text = model.displaySymbol
+//        configuration.secondaryText = model.description
+//        cell.contentConfiguration = configuration
+        return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension WatchListViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+//        let model = results[indexPath.row]
+//        delegate?.searchResultsViewControllerDidSelect(searchResult: model)
     }
 }

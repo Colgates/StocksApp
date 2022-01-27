@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		8D0D873627A2794000C598A6 /* NewsStory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D0D873527A2794000C598A6 /* NewsStory.swift */; };
 		8D0D873827A280ED00C598A6 /* NewsStoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D0D873727A280ED00C598A6 /* NewsStoryTableViewCell.swift */; };
+		8D239D7D27A2A8C600E8BEE9 /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 8D239D7C27A2A8C600E8BEE9 /* SDWebImage */; };
 		8D532F9B27A201A100B3FECE /* SearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D532F9A27A201A100B3FECE /* SearchResponse.swift */; };
 		8D60035627A0365A0067628D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D60035527A0365A0067628D /* AppDelegate.swift */; };
 		8D60035827A0365A0067628D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D60035727A0365A0067628D /* SceneDelegate.swift */; };
@@ -54,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D239D7D27A2A8C600E8BEE9 /* SDWebImage in Frameworks */,
 				8DAA9CD827A2389900930F47 /* FloatingPanel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -160,6 +162,7 @@
 			name = StocksApp;
 			packageProductDependencies = (
 				8DAA9CD727A2389900930F47 /* FloatingPanel */,
+				8D239D7C27A2A8C600E8BEE9 /* SDWebImage */,
 			);
 			productName = StocksApp;
 			productReference = 8D60035227A0365A0067628D /* StocksApp.app */;
@@ -191,6 +194,7 @@
 			mainGroup = 8D60034927A036590067628D;
 			packageReferences = (
 				8DAA9CD627A2389900930F47 /* XCRemoteSwiftPackageReference "FloatingPanel" */,
+				8D239D7B27A2A8C600E8BEE9 /* XCRemoteSwiftPackageReference "SDWebImage" */,
 			);
 			productRefGroup = 8D60035327A0365A0067628D /* Products */;
 			projectDirPath = "";
@@ -444,6 +448,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		8D239D7B27A2A8C600E8BEE9 /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 		8DAA9CD627A2389900930F47 /* XCRemoteSwiftPackageReference "FloatingPanel" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SCENEE/FloatingPanel.git";
@@ -455,6 +467,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		8D239D7C27A2A8C600E8BEE9 /* SDWebImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D239D7B27A2A8C600E8BEE9 /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImage;
+		};
 		8DAA9CD727A2389900930F47 /* FloatingPanel */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8DAA9CD627A2389900930F47 /* XCRemoteSwiftPackageReference "FloatingPanel" */;
