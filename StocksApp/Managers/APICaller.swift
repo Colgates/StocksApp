@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 
 final class APICaller {
     static let shared = APICaller()
@@ -31,15 +30,32 @@ final class APICaller {
         case .topStories:
             request(url: url(for: .topStories, queryParams: ["category" : "general"]), expecting: [NewsStory].self, completion: completion)
         case .company(let symbol):
+            
             let today = Date()
             let oneWeekBack = today.addingTimeInterval(-(3600 * 24 * 7))
-            request(url: url(for: .companyNews, queryParams: [
+            
+            let url = url(for: .companyNews, queryParams: [
                 "symbol" : symbol,
                 "from" : DateFormatter.newsDateFormatter.string(from: oneWeekBack),
-                "to" : DateFormatter.newsDateFormatter.string(from: today)]),
-                    expecting: [NewsStory].self,
-                    completion: completion)
+                "to" : DateFormatter.newsDateFormatter.string(from: today)])
+            
+            request(url: url, expecting: [NewsStory].self, completion: completion)
         }
+    }
+    
+    public func marketData(for symbol: String, numberOfDays: TimeInterval = 7, completion: @escaping (Result<String, Error>) -> Void) {
+        
+        let today = Date()
+        let prior = today.addingTimeInterval(-(3600 * 24 * numberOfDays))
+        
+        let url = url(for: .marketData, queryParams: [
+            "symbol" : symbol,
+            "resolutiion" : "1",
+            "from" : DateFormatter.newsDateFormatter.string(from: prior),
+            "to" : DateFormatter.newsDateFormatter.string(from: today)
+        ])
+        
+        request(url: url, expecting: String.self, completion: completion)
     }
     
     // MARK: - Private
@@ -48,6 +64,7 @@ final class APICaller {
         case search
         case topStories = "news"
         case companyNews = "company-news"
+        case marketData = "stock/candle"
     }
     
     private enum APIError: Error {
@@ -65,10 +82,9 @@ final class APICaller {
         queryItems.append(.init(name: "token", value: Constants.apiKey))
         
         urlString += "?" + queryItems.map { "\($0.name)=\($0.value ?? "")"}.joined(separator: "&")
-//        print("\n\(urlString)\n")
         return URL(string: urlString)
     }
-
+    
     private func request<T: Codable>(url: URL?, expecting: T.Type, completion: @escaping (Result<T, Error>) -> Void) {
         guard let url = url else {
             completion(.failure(APIError.invalidURL))

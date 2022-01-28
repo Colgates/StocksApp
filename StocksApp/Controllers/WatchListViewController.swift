@@ -89,9 +89,8 @@ extension WatchListViewController: UISearchResultsUpdating {
                 !query.trimmingCharacters(in: .whitespaces).isEmpty else {
                     return
                 }
-        
         searchTimer?.invalidate()
-        
+
         searchTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false, block: { _ in
             APICaller.shared.search(query: query) { result in
                 switch result {
@@ -107,7 +106,6 @@ extension WatchListViewController: UISearchResultsUpdating {
                 }
             }
         })
-
     }
 }
 
