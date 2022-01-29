@@ -43,19 +43,22 @@ final class APICaller {
         }
     }
     
-    public func marketData(for symbol: String, numberOfDays: TimeInterval = 7, completion: @escaping (Result<String, Error>) -> Void) {
+    public func marketData(for symbol: String, numberOfDays: TimeInterval = 7, completion: @escaping (Result<MarketDataResponse, Error>) -> Void) {
+        
+//        let today = Date().addingTimeInterval(-(3600 * 24))
+//        let prior = today.addingTimeInterval(-(3600 * 24 * numberOfDays))
         
         let today = Date()
-        let prior = today.addingTimeInterval(-(3600 * 24 * numberOfDays))
+        let weekBefore = today.addingTimeInterval(-(3600 * 24 * 7))
         
         let url = url(for: .marketData, queryParams: [
             "symbol" : symbol,
-            "resolutiion" : "1",
-            "from" : DateFormatter.newsDateFormatter.string(from: prior),
-            "to" : DateFormatter.newsDateFormatter.string(from: today)
+            "resolution" : "1",
+            "from" : String(Int(weekBefore.timeIntervalSince1970)),
+            "to" : String(Int(today.timeIntervalSince1970))
         ])
         
-        request(url: url, expecting: String.self, completion: completion)
+        request(url: url, expecting: MarketDataResponse.self, completion: completion)
     }
     
     // MARK: - Private
