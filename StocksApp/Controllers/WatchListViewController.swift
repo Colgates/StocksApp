@@ -24,6 +24,8 @@ class WatchListViewController: UIViewController {
         return tableView
     }()
     
+    private var observer: NSObjectProtocol?
+    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -34,6 +36,7 @@ class WatchListViewController: UIViewController {
         setUpWatchlistData()
         setUpTitleView()
         setUpFloatingPanel()
+        setUpObserver()
     }
     
     override func viewDidLayoutSubviews() {
@@ -68,13 +71,13 @@ class WatchListViewController: UIViewController {
                 defer {
                     group.leave()
                 }
-                
+
                 switch result {
                 case .success(let data):
                     let candleSticks = data.candleSticks
                     self?.watchlistMap[symbol] = candleSticks
                 case .failure(let error):
-                    print(error)
+                    print(error.localizedDescription)
                 }
             }
             
@@ -87,6 +90,7 @@ class WatchListViewController: UIViewController {
     
     private func createViewModels() {
         var viewModels = [WatchListTableViewCell.ViewModel]()
+        
         for (symbol, candleSticks) in watchlistMap {
             let changePercentage = getChangePercentage(symbol: symbol, data: candleSticks)
             viewModels.append(.init(
@@ -109,8 +113,6 @@ class WatchListViewController: UIViewController {
         guard let latestClose = data.first?.close, let priorClose = data.first(where: { !Calendar.current.isDate($0.date, inSameDayAs: latestDate) })?.close else {
             return 0
         }
-        print(priorClose)
-        print(latestClose)
         let diff = 1 - (priorClose/latestClose)
         return diff
     }
@@ -133,12 +135,20 @@ class WatchListViewController: UIViewController {
     }
 
     private func setUpFloatingPanel() {
-        let vc = NewsViewController(type: .company(symbol: "SNAP"))
+        let vc = NewsViewController(type: .topStories)
         let panel = FloatingPanelController(delegate: self)
         panel.surfaceView.backgroundColor = .secondarySystemBackground
+        panel.layout = MyFloatingPanelLayout()
+        panel.track(scrollView: vc.tableView)
         panel.set(contentViewController: vc)
         panel.addPanel(toParent: self)
-        panel.track(scrollView: vc.tableView)
+    }
+    
+    private func setUpObserver() {
+        observer = NotificationCenter.default.addObserver(forName: .didAddToWatchList, object: nil, queue: .main, using: { [weak self] _ in
+            self?.viewModels.removeAll()
+            self?.setUpWatchlistData()
+        })
     }
 }
 
@@ -176,7 +186,8 @@ extension WatchListViewController: UISearchResultsUpdating {
 extension WatchListViewController: SearchResultsViewControllerDeleagate {
     func searchResultsViewControllerDidSelect(searchResult: SearchResult) {
 //        navigationItem.searchController?.searchBar.resignFirstResponder()
-        let navVC = UINavigationController(rootViewController: StockDetailsViewController())
+        let vc = StockDetailsViewController(symbol: searchResult.displaySymbol, companyName: searchResult.description, candleStickData: [])
+        let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true)
     }
 }
@@ -185,8 +196,8 @@ extension WatchListViewController: SearchResultsViewControllerDeleagate {
 
 extension WatchListViewController: FloatingPanelControllerDelegate {
     func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
-        navigationItem.titleView?.isHidden = fpc.state == .full
-        navigationItem.searchController?.searchBar.isHidden = fpc.state == .full
+//        navigationItem.titleView?.isHidden = fpc.state == .full
+//        navigationItem.searchController?.searchBar.isHidden = fpc.state == .full
     }
 }
 
@@ -200,7 +211,6 @@ extension WatchListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: WatchListTableViewCell.identifier, for: indexPath) as? WatchListTableViewCell else { fatalError() }
         cell.configure(with: viewModels[indexPath.row])
-        cell.backgroundColor = .red
         return cell
     }
 }
@@ -210,11 +220,36 @@ extension WatchListViewController: UITableViewDataSource {
 extension WatchListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        let viewModel = viewModels[indexPath.row]
+        let vc = StockDetailsViewController(symbol: viewModel.symbol, companyName: viewModel.companyName, candleStickData: watchlistMap[viewModel.symbol] ?? [])
+        let navVC = UINavigationController(rootViewController: vc)
+        present(navVC, animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         WatchListTableViewCell.preferredHeight
     }
     
-    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+     
+        if editingStyle == .delete {
+            tableView.beginUpdates()
+            PersistenceManager.shared.removeFromWatchList(symbol: viewModels[indexPath.row].symbol)
+            viewModels.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+            tableView.endUpdates()
+        }
+    }
+}
+
+class MyFloatingPanelLayout: FloatingPanelLayout {
+    let position: FloatingPanelPosition = .bottom
+    let initialState: FloatingPanelState = .tip
+    var anchors: [FloatingPanelState: FloatingPanelLayoutAnchoring] {
+        return [
+            .full: FloatingPanelLayoutAnchor(absoluteInset: 16.0, edge: .top, referenceGuide: .safeArea),
+            .half: FloatingPanelLayoutAnchor(fractionalInset: 0.5, edge: .bottom, referenceGuide: .safeArea),
+            .tip: FloatingPanelLayoutAnchor(absoluteInset: 44.0, edge: .bottom, referenceGuide: .safeArea),
+        ]
+    }
 }

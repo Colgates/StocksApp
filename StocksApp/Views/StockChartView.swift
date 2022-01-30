@@ -10,7 +10,7 @@ import UIKit
 class StockChartView: UIView {
 
     struct ViewModel {
-        let data: [CandleStick]
+        let data: [Double]
         let showLegend: Bool
         let showAxis: Bool
     }

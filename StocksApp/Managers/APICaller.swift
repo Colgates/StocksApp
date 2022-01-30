@@ -49,7 +49,7 @@ final class APICaller {
 //        let prior = today.addingTimeInterval(-(3600 * 24 * numberOfDays))
         
         let today = Date()
-        let weekBefore = today.addingTimeInterval(-(3600 * 24 * 7))
+        let weekBefore = today.addingTimeInterval(-(3600 * 24 * numberOfDays))
         
         let url = url(for: .marketData, queryParams: [
             "symbol" : symbol,
