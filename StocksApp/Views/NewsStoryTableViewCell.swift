@@ -61,6 +61,7 @@ class NewsStoryTableViewCell: UITableViewCell {
         contentView.backgroundColor = .secondarySystemBackground
         backgroundColor = .secondarySystemBackground
         addSubviews(sourceLabel, headlineLabel, dateLabel, storyImageView)
+        addSubview(<#T##view: UIView##UIView#>)
     }
     
     required init?(coder: NSCoder) {

@@ -187,6 +187,9 @@ extension WatchListViewController: UISearchResultsUpdating {
 extension WatchListViewController: SearchResultsViewControllerDeleagate {
     func searchResultsViewControllerDidSelect(searchResult: SearchResult) {
         navigationItem.searchController?.searchBar.resignFirstResponder()
+        
+        HapticsManager.shared.vibrateForSelection()
+        
         let vc = StockDetailsViewController(symbol: searchResult.displaySymbol, companyName: searchResult.description, candleStickData: [])
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true)
@@ -221,6 +224,9 @@ extension WatchListViewController: UITableViewDataSource {
 extension WatchListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        HapticsManager.shared.vibrateForSelection()
+        
         let viewModel = viewModels[indexPath.row]
         let vc = StockDetailsViewController(symbol: viewModel.symbol, companyName: viewModel.companyName, candleStickData: watchlistMap[viewModel.symbol] ?? [])
         let navVC = UINavigationController(rootViewController: vc)

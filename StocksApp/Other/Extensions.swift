@@ -92,6 +92,8 @@ extension DateFormatter {
 // MARK: - Add Subview
 
 extension UIView {
+    /// Add  views to the end of the receiver’s list of subviews.
+    /// - Parameter views: <#views description#>
     func addSubviews(_ views: UIView...) {
         views.forEach { addSubview($0) }
     }
