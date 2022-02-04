@@ -25,7 +25,7 @@ class WatchListTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 15, weight: .medium)
         label.backgroundColor = .systemGreen
-        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -33,7 +33,7 @@ class WatchListTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 15, weight: .regular)
         label.backgroundColor = .systemYellow
-        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
@@ -52,7 +52,8 @@ class WatchListTableViewCell: UITableViewCell {
     
     private let miniChartView: StockChartView = {
         let chart = StockChartView()
-        chart.backgroundColor = .link
+        chart.isUserInteractionEnabled = false
+        chart.clipsToBounds = true
         return chart
     }()
     
@@ -67,29 +68,29 @@ class WatchListTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-//        symbolLabel.sizeToFit()
-//        nameLabel.sizeToFit()
-//        priceLabel.sizeToFit()
-//        changeLabel.sizeToFit()
-        
-        NSLayoutConstraint.activate([
-            symbolLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
-            symbolLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
-            symbolLabel.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.5),
-            symbolLabel.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: 0.4),
-
-            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
-            nameLabel.topAnchor.constraint(equalTo: symbolLabel.bottomAnchor),
-            nameLabel.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.5),
-            nameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 5)
-        ])
+        symbolLabel.sizeToFit()
+        nameLabel.sizeToFit()
+        priceLabel.sizeToFit()
+        changeLabel.sizeToFit()
+        miniChartView.sizeToFit()
+//        NSLayoutConstraint.activate([
+//            symbolLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
+//            symbolLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
+//            symbolLabel.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.5),
+//            symbolLabel.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: 0.4),
 //
-//        let yStart: CGFloat = (contentView.height - symbolLabel.height - nameLabel.height)/2
-//        symbolLabel.frame = CGRect(x: separatorInset.left, y: yStart, width: symbolLabel.width, height: symbolLabel.height)
-//        nameLabel.frame = CGRect(x: separatorInset.left, y: symbolLabel.bottom, width: symbolLabel.width, height: symbolLabel.height)
-//        priceLabel.frame = CGRect(x: contentView.width - 10 - priceLabel.width, y: 0, width: priceLabel.width, height: priceLabel.height)
-//        changeLabel.frame = CGRect(x: contentView.width - 10 - changeLabel.width, y: priceLabel.bottom, width: changeLabel.width, height: changeLabel.height)
-//        miniChartView.frame = CGRect(x: priceLabel.left - (contentView.width/3) - 5, y: 6, width: contentView.width/3, height: contentView.height - 12)
+//            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
+//            nameLabel.topAnchor.constraint(equalTo: symbolLabel.bottomAnchor),
+//            nameLabel.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.5),
+//            nameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 5)
+//        ])
+//
+        let yStart: CGFloat = (contentView.height - symbolLabel.height - nameLabel.height)/2
+        symbolLabel.frame = CGRect(x: separatorInset.left, y: yStart, width: symbolLabel.width, height: symbolLabel.height)
+        nameLabel.frame = CGRect(x: separatorInset.left, y: symbolLabel.bottom, width: symbolLabel.width, height: symbolLabel.height)
+        priceLabel.frame = CGRect(x: contentView.width - 10 - priceLabel.width, y: 0, width: priceLabel.width, height: priceLabel.height)
+        changeLabel.frame = CGRect(x: contentView.width - 10 - changeLabel.width, y: priceLabel.bottom, width: changeLabel.width, height: changeLabel.height)
+        miniChartView.frame = CGRect(x: priceLabel.left - (contentView.width/3) - 5, y: 6, width: contentView.width/3, height: contentView.height - 12)
     }
     
     override func prepareForReuse() {
@@ -107,5 +108,6 @@ class WatchListTableViewCell: UITableViewCell {
         priceLabel.text = viewModel.price
         changeLabel.text = viewModel.changePercentage
         changeLabel.backgroundColor = viewModel.changeColor
+        miniChartView.configure(with: viewModel.chartViewModel)
     }
 }

@@ -102,7 +102,8 @@ class WatchListViewController: UIViewController {
                 chartViewModel: .init(
                     data: candleSticks.reversed().map { $0.close },
                     showLegend: false,
-                    showAxis: false)
+                    showAxis: false,
+                    fillColor: changePercentage < 0 ? .systemRed : .systemGreen)
             ))
         }
         self.viewModels = viewModels
@@ -185,7 +186,7 @@ extension WatchListViewController: UISearchResultsUpdating {
 
 extension WatchListViewController: SearchResultsViewControllerDeleagate {
     func searchResultsViewControllerDidSelect(searchResult: SearchResult) {
-//        navigationItem.searchController?.searchBar.resignFirstResponder()
+        navigationItem.searchController?.searchBar.resignFirstResponder()
         let vc = StockDetailsViewController(symbol: searchResult.displaySymbol, companyName: searchResult.description, candleStickData: [])
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true)
@@ -196,8 +197,8 @@ extension WatchListViewController: SearchResultsViewControllerDeleagate {
 
 extension WatchListViewController: FloatingPanelControllerDelegate {
     func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
-//        navigationItem.titleView?.isHidden = fpc.state == .full
-//        navigationItem.searchController?.searchBar.isHidden = fpc.state == .full
+        navigationItem.titleView?.isHidden = fpc.state == .full
+        navigationItem.searchController?.searchBar.isHidden = fpc.state == .full
     }
 }
 
@@ -233,11 +234,11 @@ extension WatchListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
      
         if editingStyle == .delete {
-            tableView.beginUpdates()
+//            tableView.beginUpdates()
             PersistenceManager.shared.removeFromWatchList(symbol: viewModels[indexPath.row].symbol)
             viewModels.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
-            tableView.endUpdates()
+//            tableView.endUpdates()
         }
     }
 }
