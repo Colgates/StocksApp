@@ -183,7 +183,7 @@ extension StockDetailsViewController: NewsHeaderViewDelegate {
         
         HapticsManager.shared.vibrate(for: .success)
         
-        headerView.button.isHidden = true
+        headerView.addButton.isHidden = true
         PersistenceManager.shared.addToWatchList(symbol: symbol, companyName: companyName)
 
         let alert = UIAlertController(title: "Added to Watchlist", message: "We've added \(companyName) to your watchlist" , preferredStyle: .alert)

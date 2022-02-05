@@ -23,20 +23,24 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         let shouldShowAddButton: Bool
     }
     
-    private let label: UILabel = {
+    private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 32)
+        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.backgroundColor = .red
         return label
     }()
     
-    var button: UIButton = {
-        let button = UIButton()
+    var addButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.configuration = .filled()
         button.setTitle("+ Watchlist", for: .normal)
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 8
         button.layer.masksToBounds = true
         button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -45,7 +49,7 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = .secondarySystemBackground
-        contentView.addSubviews(label, button)
+        contentView.addSubviews(titleLabel, addButton)
     }
     
     required init?(coder: NSCoder) {
@@ -58,9 +62,18 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        label.frame = CGRect(x: 14, y: 0, width: contentView.width - 28, height: contentView.height)
-        button.sizeToFit()
-        button.frame = CGRect(x: contentView.width - button.width - 14, y: (contentView.height - button.height)/2, width: button.width + 8, height: button.height)
+        
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
+            titleLabel.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.6),
+            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5),
+            
+            addButton.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+            addButton.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
+            addButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
+            addButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5)
+        ])
     }
     
     override func prepareForReuse() {
@@ -69,7 +82,7 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     }
     
     public func configure(with viewModel: ViewModel) {
-        label.text = viewModel.title
-        button.isHidden = !viewModel.shouldShowAddButton
+        titleLabel.text = viewModel.title
+//        addButton.isHidden = !viewModel.shouldShowAddButton
     }
 }

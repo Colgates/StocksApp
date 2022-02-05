@@ -191,8 +191,8 @@ extension WatchListViewController: SearchResultsViewControllerDeleagate {
 
 extension WatchListViewController: FloatingPanelControllerDelegate {
     func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
-        navigationItem.titleView?.isHidden = fpc.state == .full
-        navigationItem.searchController?.searchBar.isHidden = fpc.state == .full
+//        navigationItem.titleView?.isHidden = fpc.state == .full
+//        navigationItem.searchController?.searchBar.isHidden = fpc.state == .full
     }
 }
 
@@ -231,11 +231,9 @@ extension WatchListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
      
         if editingStyle == .delete {
-//            tableView.beginUpdates()
             PersistenceManager.shared.removeFromWatchList(symbol: viewModels[indexPath.row].symbol)
             viewModels.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-//            tableView.endUpdates()
+            tableView.deleteRows(at: [indexPath], with: .fade)
         }
     }
 }
