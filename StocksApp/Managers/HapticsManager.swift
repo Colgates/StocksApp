@@ -5,7 +5,6 @@
 //  Created by Evgenii Kolgin on 25.01.2022.
 //
 
-import Foundation
 import UIKit
 
 final class HapticsManager {

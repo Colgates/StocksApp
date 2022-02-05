@@ -17,7 +17,6 @@ struct Metrics: Codable {
     let annualWeekLow: Double
     let annualWeekLowDate: String
     let annualWeekPriceReturnDaily: Float
-    let beta: Float
     
     enum CodingKeys: String, CodingKey {
         case tenAverageTradingVolume = "10DayAverageTradingVolume"
@@ -25,6 +24,5 @@ struct Metrics: Codable {
         case annualWeekLow = "52WeekLow"
         case annualWeekLowDate = "52WeekLowDate"
         case annualWeekPriceReturnDaily = "52WeekPriceReturnDaily"
-        case beta = "beta"
     }
 }

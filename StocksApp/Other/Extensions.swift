@@ -7,6 +7,20 @@
 
 import UIKit
 
+// MARK: - ViewController
+
+extension UIViewController {
+    func getChangePercentage(data: [CandleStick]) -> Double {
+        let latestDate = data[0].date
+        guard let latestClose = data.first?.close, let priorClose = data.first(where: { !Calendar.current.isDate($0.date, inSameDayAs: latestDate) })?.close else {
+            return 0
+        }
+        let diff = 1 - (priorClose/latestClose)
+        return diff
+    }
+}
+
+
 // MARK: - NotificationCenter
 
 extension Notification.Name {

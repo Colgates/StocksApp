@@ -25,7 +25,7 @@ class NewsViewController: UIViewController {
     }
     
     // MARK: - Properties
-
+    
     private var stories: [NewsStory] = []
     
     private let type: Type
@@ -80,11 +80,6 @@ class NewsViewController: UIViewController {
         }
     }
     
-    private func open(url: URL) {
-        let vc = SFSafariViewController(url: url)
-        present(vc, animated: true)
-    }
-    
     private func presentFailedToOpenAlert() {
         
         HapticsManager.shared.vibrate(for: .error)
@@ -137,6 +132,7 @@ extension NewsViewController: UITableViewDelegate {
             presentFailedToOpenAlert()
             return
         }
-        open(url: url)
+        let vc = SFSafariViewController(url: url)
+        present(vc, animated: true)
     }
 }

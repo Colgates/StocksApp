@@ -42,7 +42,6 @@ class StockDetailsViewController: UIViewController {
         setUpTableView()
         setUpCloseButton()
         fetchFinancialData()
-        fetchNews()
     }
     
     override func viewDidLayoutSubviews() {
@@ -79,12 +78,10 @@ class StockDetailsViewController: UIViewController {
         }
         
         group.enter()
-        
         APICaller.shared.financialMetrics(for: symbol) { [weak self] result in
             defer {
                 group.leave()
             }
-            
             switch result {
             case .success(let response):
                 let metrics = response.metric
@@ -93,13 +90,13 @@ class StockDetailsViewController: UIViewController {
                 print(error)
             }
         }
-        group.notify(queue: .main) { [weak self] in
-            self?.renderChart()
-        }
-    }
-    
-    private func fetchNews() {
+        
+        group.enter()
         APICaller.shared.news(for: .company(symbol: symbol)) { [weak self] result in
+            
+            defer {
+                group.leave()
+            }
             switch result {
             case .success(let stories):
                 DispatchQueue.main.async {
@@ -109,6 +106,10 @@ class StockDetailsViewController: UIViewController {
             case .failure(let error):
                 print(error)
             }
+        }
+        
+        group.notify(queue: .main) { [weak self] in
+            self?.renderChart()
         }
     }
     
@@ -120,21 +121,13 @@ class StockDetailsViewController: UIViewController {
             viewModels.append(.init(name: "52W Low", value: String(metrics.annualWeekLow)))
             viewModels.append(.init(name: "52W Return", value: String(metrics.annualWeekPriceReturnDaily)))
             viewModels.append(.init(name: "10D Vol.", value: String(metrics.tenAverageTradingVolume)))
-            viewModels.append(.init(name: "Beta", value: String(metrics.beta)))
         }
-        let changePercentage = getChangePercentage(symbol: symbol, data: candleStickData)
+        
+        let changePercentage = getChangePercentage(data: candleStickData)
+        
         headerView.configure(chartViewModel: .init(data: candleStickData.reversed().map { $0.close }, showLegend: true, showAxis: true, fillColor: changePercentage < 0 ? .systemRed : .systemGreen), metricViewModels: viewModels)
         
         tableView.tableHeaderView = headerView
-    }
-    
-    private func getChangePercentage(symbol: String, data: [CandleStick]) -> Double {
-        let latestDate = data[0].date
-        guard let latestClose = data.first?.close, let priorClose = data.first(where: { !Calendar.current.isDate($0.date, inSameDayAs: latestDate) })?.close else {
-            return 0
-        }
-        let diff = 1 - (priorClose/latestClose)
-        return diff
     }
     
     @objc private func closeButtonTapped() {

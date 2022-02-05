@@ -26,7 +26,6 @@ class SearchResultsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .red
         setUpTableView()
     }
     
@@ -73,5 +72,7 @@ extension SearchResultsViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         let model = results[indexPath.row]
         delegate?.searchResultsViewControllerDidSelect(searchResult: model)
+        results = []
+        dismiss(animated: true)
     }
 }

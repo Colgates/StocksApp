@@ -45,9 +45,6 @@ final class APICaller {
     
     public func marketData(for symbol: String, numberOfDays: TimeInterval = 7, completion: @escaping (Result<MarketDataResponse, Error>) -> Void) {
         
-        //        let today = Date().addingTimeInterval(-(3600 * 24))
-        //        let prior = today.addingTimeInterval(-(3600 * 24 * numberOfDays))
-        
         let today = Date()
         let weekBefore = today.addingTimeInterval(-(3600 * 24 * numberOfDays))
         
