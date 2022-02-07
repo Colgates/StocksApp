@@ -11,16 +11,20 @@ class StockDetailHeaderView: UIView {
     
     private var metricViewModels: [MetricCollectionViewCell.ViewModel] = []
     
-    private let chartView = StockChartView()
+    private let chartView: StockChartView = {
+        let chart = StockChartView()
+        chart.translatesAutoresizingMaskIntoConstraints = false
+        return chart
+    }()
     
     private let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 0
-        layout.minimumLineSpacing = 0
+        layout.minimumLineSpacing = 20
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(MetricCollectionViewCell.self, forCellWithReuseIdentifier: MetricCollectionViewCell.identifier)
         collectionView.backgroundColor = .secondarySystemBackground
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
     
@@ -38,8 +42,18 @@ class StockDetailHeaderView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        chartView.frame = CGRect(x: 0, y: 0, width: width, height: height - 100)
-        collectionView.frame = CGRect(x: 0, y: height - 100, width: width, height: 100)
+        
+        NSLayoutConstraint.activate([
+            chartView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            chartView.topAnchor.constraint(equalTo: topAnchor),
+            chartView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            chartView.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.7),
+            
+            collectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            collectionView.topAnchor.constraint(equalTo: chartView.bottomAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
     }
     
     func configure(chartViewModel: StockChartView.ViewModel, metricViewModels: [MetricCollectionViewCell.ViewModel]) {
@@ -73,6 +87,6 @@ extension StockDetailHeaderView: UICollectionViewDataSource {
 
 extension StockDetailHeaderView: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        CGSize(width: width / 2, height: 100 / 3)
+        CGSize(width: width / 3, height: width / 5)
     }
 }

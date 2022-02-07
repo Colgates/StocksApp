@@ -21,6 +21,7 @@ class WatchListViewController: UIViewController {
     private let tableView: UITableView = {
         let tableView = UITableView()
         tableView.register(WatchListTableViewCell.self, forCellReuseIdentifier: WatchListTableViewCell.identifier)
+        tableView.separatorStyle = .none
         return tableView
     }()
     
@@ -49,6 +50,7 @@ class WatchListViewController: UIViewController {
         let resultVC = SearchResultsViewController()
         resultVC.delegate = self
         let searchVC = UISearchController(searchResultsController: resultVC)
+        searchVC.searchBar.tintColor = .label
         searchVC.searchResultsUpdater = self
         navigationItem.searchController = searchVC
     }
@@ -100,7 +102,7 @@ class WatchListViewController: UIViewController {
                 changeColor: changePercentage < 0 ? .systemRed : .systemGreen,
                 changePercentage: .percentage(from: changePercentage),
                 chartViewModel: .init(
-                    data: candleSticks.reversed().map { $0.close },
+                    data: candleSticks.map { $0.close },
                     showLegend: false,
                     showAxis: false,
                     fillColor: changePercentage < 0 ? .systemRed : .systemGreen)

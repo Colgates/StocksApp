@@ -30,7 +30,7 @@ struct MarketDataResponse: Codable {
         for index in 0..<open.count {
             result.append(CandleStick(date: Date(timeIntervalSince1970: timestamps[index]), high: high[index], low: low[index], open: open[index], close: close[index]))
         }
-        return result.sorted { $0.date > $1.date }
+        return result.sorted { $0.date < $1.date }
     }
 }
 

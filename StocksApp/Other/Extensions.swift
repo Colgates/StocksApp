@@ -5,6 +5,7 @@
 //  Created by Evgenii Kolgin on 26.01.2022.
 //
 
+import SafariServices
 import UIKit
 
 // MARK: - ViewController
@@ -17,6 +18,12 @@ extension UIViewController {
         }
         let diff = 1 - (priorClose/latestClose)
         return diff
+    }
+    
+    func presentSafariViewController(with url: URL) {
+        let safariVC = SFSafariViewController(url: url)
+        safariVC.preferredControlTintColor = .label
+        present(safariVC, animated: true)
     }
 }
 

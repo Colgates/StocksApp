@@ -72,7 +72,6 @@ extension SearchResultsViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         let model = results[indexPath.row]
         delegate?.searchResultsViewControllerDidSelect(searchResult: model)
-        results = []
         dismiss(animated: true)
     }
 }

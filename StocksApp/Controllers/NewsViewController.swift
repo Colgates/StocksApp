@@ -5,7 +5,6 @@
 //  Created by Evgenii Kolgin on 25.01.2022.
 //
 
-import SafariServices
 import UIKit
 
 class NewsViewController: UIViewController {
@@ -132,7 +131,7 @@ extension NewsViewController: UITableViewDelegate {
             presentFailedToOpenAlert()
             return
         }
-        let vc = SFSafariViewController(url: url)
-        present(vc, animated: true)
+        
+        presentSafariViewController(with: url)
     }
 }

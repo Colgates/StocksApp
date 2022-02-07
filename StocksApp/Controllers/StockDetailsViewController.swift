@@ -5,7 +5,6 @@
 //  Created by Evgenii Kolgin on 25.01.2022.
 //
 
-import SafariServices
 import UIKit
 
 class StockDetailsViewController: UIViewController {
@@ -15,6 +14,8 @@ class StockDetailsViewController: UIViewController {
     
     private let tableView: UITableView = {
         let tableView = UITableView()
+        tableView.sectionHeaderTopPadding = 0
+        tableView.backgroundColor = .secondarySystemBackground
         tableView.register(NewsStoryTableViewCell.self, forCellReuseIdentifier: NewsStoryTableViewCell.identifier)
         tableView.register(NewsHeaderView.self, forHeaderFooterViewReuseIdentifier: NewsHeaderView.identifier)
         return tableView
@@ -39,6 +40,7 @@ class StockDetailsViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = companyName
+
         setUpTableView()
         setUpCloseButton()
         fetchFinancialData()
@@ -46,7 +48,9 @@ class StockDetailsViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        view.addSubview(tableView)
         tableView.frame = view.bounds
+        tableView.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: view.width, height: view.height / 2))
     }
     
     private func setUpCloseButton() {
@@ -54,7 +58,6 @@ class StockDetailsViewController: UIViewController {
     }
     
     private func setUpTableView() {
-        view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
     }
@@ -114,7 +117,7 @@ class StockDetailsViewController: UIViewController {
     }
     
     private func renderChart() {
-        let headerView = StockDetailHeaderView(frame: CGRect(x: 0, y: 0, width: view.width, height: view.height * 0.4))
+        let headerView = StockDetailHeaderView(frame: CGRect(x: 0, y: 0, width: view.width, height: view.height / 2))
         var viewModels = [MetricCollectionViewCell.ViewModel]()
         if let metrics = metrics {
             viewModels.append(.init(name: "52W High", value: String(metrics.annualWeekHigh)))
@@ -122,11 +125,11 @@ class StockDetailsViewController: UIViewController {
             viewModels.append(.init(name: "52W Return", value: String(metrics.annualWeekPriceReturnDaily)))
             viewModels.append(.init(name: "10D Vol.", value: String(metrics.tenAverageTradingVolume)))
         }
-        
+
         let changePercentage = getChangePercentage(data: candleStickData)
-        
-        headerView.configure(chartViewModel: .init(data: candleStickData.reversed().map { $0.close }, showLegend: true, showAxis: true, fillColor: changePercentage < 0 ? .systemRed : .systemGreen), metricViewModels: viewModels)
-        
+
+        headerView.configure(chartViewModel: .init(data: candleStickData.reversed().map { $0.close }, showLegend: false, showAxis: true, fillColor: changePercentage < 0 ? .systemRed : .systemGreen), metricViewModels: viewModels)
+
         tableView.tableHeaderView = headerView
     }
     
@@ -143,6 +146,7 @@ extension StockDetailsViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: NewsStoryTableViewCell.identifier, for: indexPath) as? NewsStoryTableViewCell else { fatalError() }
+        cell.backgroundColor = .red
         cell.configure(with: .init(model: stories[indexPath.row]))
         return cell
     }
@@ -164,14 +168,13 @@ extension StockDetailsViewController: UITableViewDelegate {
         
         HapticsManager.shared.vibrateForSelection()
         
-        let vc = SFSafariViewController(url: url)
-        present(vc, animated: true)
+        presentSafariViewController(with: url)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         NewsStoryTableViewCell.preferredHeight
     }
-    
+
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         NewsHeaderView.preferredHeight
     }

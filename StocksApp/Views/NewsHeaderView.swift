@@ -14,7 +14,7 @@ protocol NewsHeaderViewDelegate: AnyObject {
 class NewsHeaderView: UITableViewHeaderFooterView {
     
     static let identifier = "NewsHeaderView"
-    static let preferredHeight: CGFloat = 50
+    static let preferredHeight: CGFloat = 60
 
     weak var delegate: NewsHeaderViewDelegate?
     
@@ -27,7 +27,6 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 32)
         label.translatesAutoresizingMaskIntoConstraints = false
-//        label.backgroundColor = .red
         return label
     }()
     
@@ -83,6 +82,6 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     
     public func configure(with viewModel: ViewModel) {
         titleLabel.text = viewModel.title
-//        addButton.isHidden = !viewModel.shouldShowAddButton
+        addButton.isHidden = !viewModel.shouldShowAddButton
     }
 }

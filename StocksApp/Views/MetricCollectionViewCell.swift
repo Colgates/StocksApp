@@ -18,18 +18,22 @@ class MetricCollectionViewCell: UICollectionViewCell {
     
     private let nameLabel: UILabel = {
         let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textAlignment = .center
         return label
     }()
     
     private let valueLabel: UILabel = {
         let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textAlignment = .center
         return label
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.clipsToBounds = true
-        addSubviews(nameLabel, valueLabel)
+        contentView.addSubviews(nameLabel, valueLabel)
     }
     
     required init?(coder: NSCoder) {
@@ -38,10 +42,18 @@ class MetricCollectionViewCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        nameLabel.sizeToFit()
-        valueLabel.sizeToFit()
-        nameLabel.frame = CGRect(x: 3, y: 0, width: nameLabel.width, height: contentView.height)
-        valueLabel.frame = CGRect(x: nameLabel.right + 3, y: 0, width: valueLabel.width, height: contentView.height)
+        
+        NSLayoutConstraint.activate([
+            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            nameLabel.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: 0.5),
+            
+            valueLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            valueLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor),
+            valueLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            valueLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+        ])
     }
     
     override func prepareForReuse() {
@@ -51,7 +63,7 @@ class MetricCollectionViewCell: UICollectionViewCell {
     }
     
     func configure(with viewModel: ViewModel) {
-        nameLabel.text = viewModel.name + ":"
+        nameLabel.text = viewModel.name
         valueLabel.text = viewModel.value
     }
 }
