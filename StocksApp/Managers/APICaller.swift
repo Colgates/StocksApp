@@ -19,10 +19,11 @@ final class APICaller {
     private init() {}
     
     // MARK: - Public
-    
-    public func search(query: String, completion: @escaping (Result<SearchResponse, Error>) -> Void) {
-        guard let safeQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
-        request(url: url(for: .search, queryParams: ["q" : safeQuery]), expecting: SearchResponse.self, completion: completion)
+//    completion: @escaping (Result<SearchResponse, Error>) -> Void
+    public func search(query: String) async throws -> SearchResponse {
+        guard let safeQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { throw APIError.invalidURL }
+//        request(url: url(for: .search, queryParams: ["q" : safeQuery]), expecting: SearchResponse.self, completion: completion)
+        return try await asyncRequest(url: url(for: .search, queryParams: ["q" : safeQuery]), expecting: SearchResponse.self)
     }
     
     public func news(for type: NewsViewController.`Type`, completion: @escaping (Result<[NewsStory], Error>) -> Void) {
@@ -114,5 +115,36 @@ final class APICaller {
             }
         }
         .resume()
+    }
+
+    private func asyncRequest<T: Codable>(url: URL?, expecting: T.Type) async throws -> T {
+        guard let url = url else { throw APIError.invalidURL }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let result = try JSONDecoder().decode(expecting.self, from: data)
+            return result
+        } catch {
+            throw(error)
+        }
+        
+        
+//        URLSession.shared.dataTask(with: url) { data, _, error in
+//            guard let data = data, error == nil else {
+//                if let error = error {
+//                    throw Error(error)
+//                } else {
+//                    throw APIError.noDataReturned
+//                }
+//            }
+//
+//            do {
+//                let result = try JSONDecoder().decode(expecting.self, from: data)
+//                completion(.success(result))
+//            } catch {
+//                completion(.failure(error))
+//            }
+//        }
+//        .resume()
     }
 }

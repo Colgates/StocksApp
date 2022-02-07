@@ -158,19 +158,23 @@ extension WatchListViewController: UISearchResultsUpdating {
         searchTimer?.invalidate()
 
         searchTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false, block: { _ in
-            APICaller.shared.search(query: query) { result in
-                switch result {
-                case .success(let repsponse):
-                    DispatchQueue.main.async {
-                        resultsVC.update(with: repsponse.result)
-                    }
-                case .failure(let error):
-                    print(error)
-                    DispatchQueue.main.async {
-                        resultsVC.update(with: [])
-                    }
-                }
+            Task {
+            let response = try await APICaller.shared.search(query: query)
+                resultsVC.update(with: response.result)
             }
+//            APICaller.shared.search(query: query) { result in
+//                switch result {
+//                case .success(let repsponse):
+//                    DispatchQueue.main.async {
+//                        resultsVC.update(with: repsponse.result)
+//                    }
+//                case .failure(let error):
+//                    print(error)
+//                    DispatchQueue.main.async {
+//                        resultsVC.update(with: [])
+//                    }
+//                }
+//            }
         })
     }
 }
