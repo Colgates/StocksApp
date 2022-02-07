@@ -68,19 +68,11 @@ class WatchListViewController: UIViewController {
         
         for symbol in symbols {
             group.enter()
-            
-            APICaller.shared.marketData(for: symbol) { [weak self] result in
-                defer {
-                    group.leave()
-                }
-
-                switch result {
-                case .success(let data):
-                    let candleSticks = data.candleSticks
-                    self?.watchlistMap[symbol] = candleSticks
-                case .failure(let error):
-                    print(error.localizedDescription)
-                }
+            Task {
+                defer { group.leave() }
+                let data = try await APICaller.shared.marketData(for: symbol)
+                let candleSticks = data.candleSticks
+                watchlistMap[symbol] = candleSticks
             }
             
             group.notify(queue: .main) { [weak self] in
@@ -159,22 +151,9 @@ extension WatchListViewController: UISearchResultsUpdating {
 
         searchTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false, block: { _ in
             Task {
-            let response = try await APICaller.shared.search(query: query)
+                let response = try await APICaller.shared.search(query: query)
                 resultsVC.update(with: response.result)
             }
-//            APICaller.shared.search(query: query) { result in
-//                switch result {
-//                case .success(let repsponse):
-//                    DispatchQueue.main.async {
-//                        resultsVC.update(with: repsponse.result)
-//                    }
-//                case .failure(let error):
-//                    print(error)
-//                    DispatchQueue.main.async {
-//                        resultsVC.update(with: [])
-//                    }
-//                }
-//            }
         })
     }
 }

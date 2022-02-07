@@ -66,16 +66,10 @@ class NewsViewController: UIViewController {
     }
     
     private func fetchNews() {
-        APICaller.shared.news(for: type) { [weak self] result in
-            switch result {
-            case .success(let stories):
-                DispatchQueue.main.async {
-                    self?.stories = stories
-                    self?.tableView.reloadData()
-                }
-            case .failure(let error):
-                print(error)
-            }
+        Task {
+            let stories = try await APICaller.shared.news(for: type)
+            self.stories = stories
+            self.tableView.reloadData()
         }
     }
     

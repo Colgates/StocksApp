@@ -40,7 +40,7 @@ class StockDetailsViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = companyName
-
+        
         setUpTableView()
         setUpCloseButton()
         fetchFinancialData()
@@ -67,48 +67,28 @@ class StockDetailsViewController: UIViewController {
         
         if candleStickData.isEmpty {
             group.enter()
-            APICaller.shared.marketData(for: symbol) { result in
-                defer {
-                    group.leave()
-                }
-                switch result {
-                case .success(let respone):
-                    self.candleStickData = respone.candleSticks
-                case .failure(let error):
-                    print(error)
-                }
+            Task {
+                defer { group.leave() }
+                let response = try await APICaller.shared.marketData(for: symbol)
+                candleStickData = response.candleSticks
             }
         }
         
         group.enter()
-        APICaller.shared.financialMetrics(for: symbol) { [weak self] result in
-            defer {
-                group.leave()
-            }
-            switch result {
-            case .success(let response):
-                let metrics = response.metric
-                self?.metrics = metrics
-            case .failure(let error):
-                print(error)
-            }
+        Task {
+            defer { group.leave() }
+            let response = try await APICaller.shared.financialMetrics(for: symbol)
+            let metrics = response.metric
+            self.metrics = metrics
         }
         
         group.enter()
-        APICaller.shared.news(for: .company(symbol: symbol)) { [weak self] result in
+        Task {
+            defer { group.leave() }
             
-            defer {
-                group.leave()
-            }
-            switch result {
-            case .success(let stories):
-                DispatchQueue.main.async {
-                    self?.stories = stories
-                    self?.tableView.reloadData()
-                }
-            case .failure(let error):
-                print(error)
-            }
+            let stories = try await APICaller.shared.news(for: .company(symbol: symbol))
+            self.stories = stories
+            self.tableView.reloadData()
         }
         
         group.notify(queue: .main) { [weak self] in
@@ -125,16 +105,16 @@ class StockDetailsViewController: UIViewController {
             viewModels.append(.init(name: "52W Return", value: String(metrics.annualWeekPriceReturnDaily)))
             viewModels.append(.init(name: "10D Vol.", value: String(metrics.tenAverageTradingVolume)))
         }
-
+        
         let changePercentage = getChangePercentage(data: candleStickData)
-
+        
         headerView.configure(chartViewModel: .init(data: candleStickData.reversed().map { $0.close }, showLegend: false, showAxis: true, fillColor: changePercentage < 0 ? .systemRed : .systemGreen), metricViewModels: viewModels)
-
+        
         tableView.tableHeaderView = headerView
     }
     
     @objc private func closeButtonTapped() {
-        dismiss(animated: true, completion: nil)
+        dismiss(animated: true)
     }
 }
 // MARK: - UITableViewDataSource
@@ -174,7 +154,7 @@ extension StockDetailsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         NewsStoryTableViewCell.preferredHeight
     }
-
+    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         NewsHeaderView.preferredHeight
     }
@@ -188,7 +168,7 @@ extension StockDetailsViewController: NewsHeaderViewDelegate {
         
         headerView.addButton.isHidden = true
         PersistenceManager.shared.addToWatchList(symbol: symbol, companyName: companyName)
-
+        
         let alert = UIAlertController(title: "Added to Watchlist", message: "We've added \(companyName) to your watchlist" , preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
         present(alert, animated: true)

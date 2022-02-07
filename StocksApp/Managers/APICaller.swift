@@ -19,17 +19,16 @@ final class APICaller {
     private init() {}
     
     // MARK: - Public
-//    completion: @escaping (Result<SearchResponse, Error>) -> Void
+
     public func search(query: String) async throws -> SearchResponse {
         guard let safeQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { throw APIError.invalidURL }
-//        request(url: url(for: .search, queryParams: ["q" : safeQuery]), expecting: SearchResponse.self, completion: completion)
         return try await asyncRequest(url: url(for: .search, queryParams: ["q" : safeQuery]), expecting: SearchResponse.self)
     }
-    
-    public func news(for type: NewsViewController.`Type`, completion: @escaping (Result<[NewsStory], Error>) -> Void) {
+
+    public func news(for type: NewsViewController.`Type`) async throws -> [NewsStory] {
         switch type {
         case .topStories:
-            request(url: url(for: .topStories, queryParams: ["category" : "general"]), expecting: [NewsStory].self, completion: completion)
+            return try await asyncRequest(url: url(for: .topStories, queryParams: ["category" : "general"]), expecting: [NewsStory].self)
         case .company(let symbol):
             
             let today = Date()
@@ -40,11 +39,11 @@ final class APICaller {
                 "from" : DateFormatter.newsDateFormatter.string(from: oneWeekBack),
                 "to" : DateFormatter.newsDateFormatter.string(from: today)])
             
-            request(url: url, expecting: [NewsStory].self, completion: completion)
+            return try await asyncRequest(url: url, expecting: [NewsStory].self)
         }
     }
-    
-    public func marketData(for symbol: String, completion: @escaping (Result<MarketDataResponse, Error>) -> Void) {
+
+    public func marketData(for symbol: String) async throws -> MarketDataResponse {
         
         let today = Date()
         let weekBefore = today.addingTimeInterval(-(3600 * 24 * 5))
@@ -55,12 +54,13 @@ final class APICaller {
             "from" : String(Int(weekBefore.timeIntervalSince1970)),
             "to" : String(Int(today.timeIntervalSince1970))
         ])
-        request(url: url, expecting: MarketDataResponse.self, completion: completion)
+        
+        return try await asyncRequest(url: url, expecting: MarketDataResponse.self)
     }
-    
-    public func financialMetrics(for symbol: String, completion: @escaping (Result<FinancialMetricsResponse, Error>) -> Void) {
+
+    public func financialMetrics(for symbol: String) async throws -> FinancialMetricsResponse {
         let url = url(for: .financials, queryParams: ["symbol" : symbol, "metric" : "all"])
-        request(url: url, expecting: FinancialMetricsResponse.self, completion: completion)
+        return try await asyncRequest(url: url, expecting: FinancialMetricsResponse.self)
     }
     
     // MARK: - Private
@@ -88,33 +88,8 @@ final class APICaller {
         queryItems.append(.init(name: "token", value: Constants.apiKey))
         
         urlString += "?" + queryItems.map { "\($0.name)=\($0.value ?? "")"}.joined(separator: "&")
-        return URL(string: urlString)
-    }
-    
-    private func request<T: Codable>(url: URL?, expecting: T.Type, completion: @escaping (Result<T, Error>) -> Void) {
-        guard let url = url else {
-            completion(.failure(APIError.invalidURL))
-            return
-        }
         
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data, error == nil else {
-                if let error = error {
-                    completion(.failure(error))
-                } else {
-                    completion(.failure(APIError.noDataReturned))
-                }
-                return
-            }
-            
-            do {
-                let result = try JSONDecoder().decode(expecting.self, from: data)
-                completion(.success(result))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-        .resume()
+        return URL(string: urlString)
     }
 
     private func asyncRequest<T: Codable>(url: URL?, expecting: T.Type) async throws -> T {
@@ -122,29 +97,9 @@ final class APICaller {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let result = try JSONDecoder().decode(expecting.self, from: data)
-            return result
+            return try JSONDecoder().decode(expecting.self, from: data)
         } catch {
             throw(error)
         }
-        
-        
-//        URLSession.shared.dataTask(with: url) { data, _, error in
-//            guard let data = data, error == nil else {
-//                if let error = error {
-//                    throw Error(error)
-//                } else {
-//                    throw APIError.noDataReturned
-//                }
-//            }
-//
-//            do {
-//                let result = try JSONDecoder().decode(expecting.self, from: data)
-//                completion(.success(result))
-//            } catch {
-//                completion(.failure(error))
-//            }
-//        }
-//        .resume()
     }
 }
