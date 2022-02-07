@@ -15,7 +15,11 @@ class SearchResultsViewController: UIViewController {
 
     weak var delegate: SearchResultsViewControllerDeleagate?
     
-    private var results: [SearchResult] = []
+    enum Section {
+        case main
+    }
+    
+    private var dataSource: UITableViewDiffableDataSource<Section, SearchResult>?
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -27,6 +31,7 @@ class SearchResultsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpTableView()
+        configureDataSource()
     }
     
     override func viewDidLayoutSubviews() {
@@ -37,40 +42,37 @@ class SearchResultsViewController: UIViewController {
     private func setUpTableView() {
         view.addSubview(tableView)
         tableView.delegate = self
-        tableView.dataSource = self
+    }
+    
+    private func configureDataSource() {
+        dataSource = UITableViewDiffableDataSource<Section, SearchResult>(tableView: tableView, cellProvider: { tableView, indexPath, model in
+            let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultTableViewCell.identifier, for: indexPath)
+            var configuration = cell.defaultContentConfiguration()
+            configuration.text = model.displaySymbol
+            configuration.secondaryText = model.description
+            cell.contentConfiguration = configuration
+            return cell
+        })
+    }
+    
+    private func updateDataSource(with results: [SearchResult]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, SearchResult>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(results)
+        dataSource?.apply(snapshot, animatingDifferences: false)
     }
     
     public func update(with results: [SearchResult]) {
-        self.results = results
         tableView.isHidden = results.isEmpty
-        tableView.reloadData()
+        updateDataSource(with: results)
     }
 }
-
-// MARK: - UITableViewDataSource
-
-extension SearchResultsViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        results.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultTableViewCell.identifier, for: indexPath)
-        let model = results[indexPath.row]
-        var configuration = cell.defaultContentConfiguration()
-        configuration.text = model.displaySymbol
-        configuration.secondaryText = model.description
-        cell.contentConfiguration = configuration
-        return cell
-    }
-}
-
 // MARK: - UITableViewDelegate
 
 extension SearchResultsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let model = results[indexPath.row]
+        guard let model = dataSource?.itemIdentifier(for: indexPath) else { return }
         delegate?.searchResultsViewControllerDidSelect(searchResult: model)
         dismiss(animated: true)
     }

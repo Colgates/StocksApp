@@ -12,7 +12,7 @@ struct SearchResponse: Codable {
     let result: [SearchResult]
 }
 
-struct SearchResult: Codable {
+struct SearchResult: Codable, Hashable {
     let description: String
     let displaySymbol: String
     let symbol: String
