@@ -10,7 +10,7 @@ import UIKit
 
 class StockChartView: UIView {
 
-    struct ViewModel {
+    struct ViewModel: Hashable {
         let data: [Double]
         let showLegend: Bool
         let showAxis: Bool

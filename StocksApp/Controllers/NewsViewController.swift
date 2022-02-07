@@ -23,11 +23,14 @@ class NewsViewController: UIViewController {
         }
     }
     
+    enum Section {
+        case main
+    }
+    
     // MARK: - Properties
-    
-    private var stories: [NewsStory] = []
-    
     private let type: Type
+    
+    private var dataSource: UITableViewDiffableDataSource<Section, NewsStory>?
     
     let tableView: UITableView = {
         let tableView = UITableView()
@@ -51,6 +54,7 @@ class NewsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpTable()
+        configureDataSource()
         fetchNews()
     }
     
@@ -61,15 +65,28 @@ class NewsViewController: UIViewController {
     
     private func setUpTable() {
         view.addSubview(tableView)
-        tableView.dataSource = self
         tableView.delegate = self
+    }
+    
+    private func configureDataSource() {
+        dataSource = UITableViewDiffableDataSource<Section, NewsStory>(tableView: tableView, cellProvider: { tableView, indexPath, model in
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: NewsStoryTableViewCell.identifier, for: indexPath) as? NewsStoryTableViewCell else { fatalError() }
+            cell.configure(with: .init(model: model))
+            return cell
+        })
+    }
+    
+    private func updateDataSource(with stories: [NewsStory]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, NewsStory>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(stories)
+        dataSource?.apply(snapshot, animatingDifferences: false)
     }
     
     private func fetchNews() {
         Task {
             let stories = try await APICaller.shared.news(for: type)
-            self.stories = stories
-            self.tableView.reloadData()
+            updateDataSource(with: stories)
         }
     }
     
@@ -82,19 +99,21 @@ class NewsViewController: UIViewController {
         present(alert, animated:  true)
     }
 }
+// MARK: - UITableViewDelegate
 
-// MARK: - UITableViewDataSource
-
-extension NewsViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        stories.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: NewsStoryTableViewCell.identifier, for: indexPath) as? NewsStoryTableViewCell else { fatalError() }
-        let model = stories[indexPath.row]
-        cell.configure(with: .init(model: model))
-        return cell
+extension NewsViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        HapticsManager.shared.vibrateForSelection()
+        
+        guard let story = dataSource?.itemIdentifier(for: indexPath) else { return }
+        guard let url = URL(string: story.url) else {
+            presentFailedToOpenAlert()
+            return
+        }
+        
+        presentSafariViewController(with: url)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -109,23 +128,5 @@ extension NewsViewController: UITableViewDataSource {
         guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: NewsHeaderView.identifier) as? NewsHeaderView else { return nil }
         header.configure(with: .init(title: self.type.title, shouldShowAddButton: false))
         return header
-    }
-}
-
-// MARK: - UITableViewDelegate
-
-extension NewsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        
-        HapticsManager.shared.vibrateForSelection()
-        
-        let story = stories[indexPath.row]
-        guard let url = URL(string: story.url) else {
-            presentFailedToOpenAlert()
-            return
-        }
-        
-        presentSafariViewController(with: url)
     }
 }

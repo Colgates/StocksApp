@@ -12,7 +12,7 @@ class WatchListTableViewCell: UITableViewCell {
     
     static let preferredHeight: CGFloat = 60
     
-    struct ViewModel {
+    struct ViewModel: Hashable {
         let symbol: String
         let companyName: String
         let price: String

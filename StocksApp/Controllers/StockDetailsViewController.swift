@@ -9,8 +9,11 @@ import UIKit
 
 class StockDetailsViewController: UIViewController {
     
-    private let symbol: String
-    private let companyName: String
+    enum Section {
+        case main
+    }
+    
+    private var dataSource: UITableViewDiffableDataSource<Section, NewsStory>?
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -21,8 +24,11 @@ class StockDetailsViewController: UIViewController {
         return tableView
     }()
     
+    
+    private let symbol: String
+    private let companyName: String
     private var candleStickData: [CandleStick]
-    private var stories: [NewsStory] = []
+    
     private var metrics: Metrics?
     
     init(symbol: String, companyName: String, candleStickData: [CandleStick]) {
@@ -42,6 +48,7 @@ class StockDetailsViewController: UIViewController {
         title = companyName
         
         setUpTableView()
+        configureDataSource()
         setUpCloseButton()
         fetchFinancialData()
     }
@@ -59,7 +66,21 @@ class StockDetailsViewController: UIViewController {
     
     private func setUpTableView() {
         tableView.delegate = self
-        tableView.dataSource = self
+    }
+    
+    private func configureDataSource() {
+        dataSource = UITableViewDiffableDataSource<Section, NewsStory>(tableView: tableView, cellProvider: { tableView, indexPath, model in
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: NewsStoryTableViewCell.identifier, for: indexPath) as? NewsStoryTableViewCell else { fatalError() }
+            cell.configure(with: .init(model: model))
+            return cell
+        })
+    }
+    
+    private func updateDataSource(with viewModels: [NewsStory]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, NewsStory>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(viewModels)
+        dataSource?.apply(snapshot, animatingDifferences: false)
     }
     
     private func fetchFinancialData() {
@@ -87,12 +108,11 @@ class StockDetailsViewController: UIViewController {
             defer { group.leave() }
             
             let stories = try await APICaller.shared.news(for: .company(symbol: symbol))
-            self.stories = stories
-            self.tableView.reloadData()
+            updateDataSource(with: stories)
         }
         
         group.notify(queue: .main) { [weak self] in
-            self?.renderChart()
+//            self?.renderChart()
         }
     }
     
@@ -117,18 +137,18 @@ class StockDetailsViewController: UIViewController {
         dismiss(animated: true)
     }
 }
-// MARK: - UITableViewDataSource
 
-extension StockDetailsViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        stories.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: NewsStoryTableViewCell.identifier, for: indexPath) as? NewsStoryTableViewCell else { fatalError() }
-        cell.backgroundColor = .red
-        cell.configure(with: .init(model: stories[indexPath.row]))
-        return cell
+// MARK: - UITableViewDelegate
+
+extension StockDetailsViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        guard let story = dataSource?.itemIdentifier(for: indexPath) else { return }
+        guard let url = URL(string: story.url) else { return }
+
+        HapticsManager.shared.vibrateForSelection()
+
+        presentSafariViewController(with: url)
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -137,18 +157,6 @@ extension StockDetailsViewController: UITableViewDataSource {
         let shouldShowAddButton = !PersistenceManager.shared.watchlistContains(symbol: symbol)
         header.configure(with: .init(title: symbol.uppercased(), shouldShowAddButton: shouldShowAddButton))
         return header
-    }
-}
-// MARK: - UITableViewDelegate
-
-extension StockDetailsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        guard let url = URL(string: stories[indexPath.row].url) else { return }
-        
-        HapticsManager.shared.vibrateForSelection()
-        
-        presentSafariViewController(with: url)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

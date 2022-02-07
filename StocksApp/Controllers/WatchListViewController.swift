@@ -16,7 +16,11 @@ class WatchListViewController: UIViewController {
     
     private var watchlistMap: [String : [CandleStick]] = [:]
     
-    private var viewModels: [WatchListTableViewCell.ViewModel] = []
+    enum Section {
+        case main
+    }
+    
+    private var dataSource: UITableViewDiffableDataSource<Section, WatchListTableViewCell.ViewModel>?
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -34,6 +38,7 @@ class WatchListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpSearchController()
         setUpTableView()
+        configureDataSource()
         setUpWatchlistData()
         setUpTitleView()
         setUpFloatingPanel()
@@ -57,8 +62,22 @@ class WatchListViewController: UIViewController {
     
     private func setUpTableView() {
         view.addSubview(tableView)
-        tableView.dataSource = self
         tableView.delegate = self
+    }
+    
+    private func configureDataSource() {
+        dataSource = UITableViewDiffableDataSource<Section, WatchListTableViewCell.ViewModel>(tableView: tableView, cellProvider: { tableView, indexPath, model in
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: WatchListTableViewCell.identifier, for: indexPath) as? WatchListTableViewCell else { fatalError() }
+            cell.configure(with: model)
+            return cell
+        })
+    }
+    
+    private func updateDataSource(with viewModels: [WatchListTableViewCell.ViewModel]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, WatchListTableViewCell.ViewModel>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(viewModels)
+        dataSource?.apply(snapshot, animatingDifferences: false)
     }
     
     private func setUpWatchlistData() {
@@ -77,7 +96,6 @@ class WatchListViewController: UIViewController {
             
             group.notify(queue: .main) { [weak self] in
                 self?.createViewModels()
-                self?.tableView.reloadData()
             }
         }
     }
@@ -100,7 +118,9 @@ class WatchListViewController: UIViewController {
                     fillColor: changePercentage < 0 ? .systemRed : .systemGreen)
             ))
         }
-        self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })
+        let sorted = viewModels.sorted(by: { $0.symbol < $1.symbol })
+//        self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })
+        updateDataSource(with: sorted)
     }
     
     private func getLatestClosingPrice(from data: [CandleStick]) -> String {
@@ -132,7 +152,7 @@ class WatchListViewController: UIViewController {
     
     private func setUpObserver() {
         observer = NotificationCenter.default.addObserver(forName: .didAddToWatchList, object: nil, queue: .main, using: { [weak self] _ in
-            self?.viewModels.removeAll()
+//            self?.viewModels.removeAll()
             self?.setUpWatchlistData()
         })
     }
@@ -181,20 +201,6 @@ extension WatchListViewController: FloatingPanelControllerDelegate {
     }
 }
 
-// MARK: - UITableViewDataSource
-
-extension WatchListViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModels.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: WatchListTableViewCell.identifier, for: indexPath) as? WatchListTableViewCell else { fatalError() }
-        cell.configure(with: viewModels[indexPath.row])
-        return cell
-    }
-}
-
 // MARK: - UITableViewDelegate
 
 extension WatchListViewController: UITableViewDelegate {
@@ -203,7 +209,7 @@ extension WatchListViewController: UITableViewDelegate {
         
         HapticsManager.shared.vibrateForSelection()
         
-        let viewModel = viewModels[indexPath.row]
+        guard let viewModel = dataSource?.itemIdentifier(for: indexPath) else { return }
         let vc = StockDetailsViewController(symbol: viewModel.symbol, companyName: viewModel.companyName, candleStickData: watchlistMap[viewModel.symbol] ?? [])
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true)
@@ -213,14 +219,14 @@ extension WatchListViewController: UITableViewDelegate {
         WatchListTableViewCell.preferredHeight
     }
     
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-     
-        if editingStyle == .delete {
-            PersistenceManager.shared.removeFromWatchList(symbol: viewModels[indexPath.row].symbol)
-            viewModels.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        }
-    }
+//    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+//
+//        if editingStyle == .delete {
+//            PersistenceManager.shared.removeFromWatchList(symbol: viewModels[indexPath.row].symbol)
+//            viewModels.remove(at: indexPath.row)
+//            tableView.deleteRows(at: [indexPath], with: .fade)
+//        }
+//    }
 }
 
 class MyFloatingPanelLayout: FloatingPanelLayout {
