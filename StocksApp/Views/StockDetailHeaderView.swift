@@ -6,10 +6,14 @@
 //
 
 import UIKit
+import SwiftUI
 
 class StockDetailHeaderView: UIView {
     
-    private var metricViewModels: [MetricCollectionViewCell.ViewModel] = []
+    enum Section {
+        case main
+    }
+    private var dataSource: UICollectionViewDiffableDataSource<Section, MetricCollectionViewCell.ViewModel>?
     
     private let chartView: StockChartView = {
         let chart = StockChartView()
@@ -33,7 +37,22 @@ class StockDetailHeaderView: UIView {
         clipsToBounds = true
         addSubviews(chartView, collectionView)
         collectionView.delegate = self
-        collectionView.dataSource = self
+        configureDataSource()
+    }
+    
+    private func configureDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<Section, MetricCollectionViewCell.ViewModel>(collectionView: collectionView, cellProvider: { collectionView, indexPath, model in
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MetricCollectionViewCell.identifier, for: indexPath) as? MetricCollectionViewCell else { fatalError() }
+            cell.configure(with: model)
+            return cell
+        })
+    }
+    
+    private func updateDataSource(with viewModels: [MetricCollectionViewCell.ViewModel]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, MetricCollectionViewCell.ViewModel>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(viewModels)
+        dataSource?.apply(snapshot, animatingDifferences: false)
     }
     
     required init?(coder: NSCoder) {
@@ -58,28 +77,7 @@ class StockDetailHeaderView: UIView {
     
     func configure(chartViewModel: StockChartView.ViewModel, metricViewModels: [MetricCollectionViewCell.ViewModel]) {
         chartView.configure(with: chartViewModel)
-        self.metricViewModels = metricViewModels
-        collectionView.reloadData()
-    }
-}
-
-// MARK: - UICollectionViewDelegate
-
-extension StockDetailHeaderView: UICollectionViewDelegate {
-    
-}
-// MARK: - UICollectionViewDataSource
-
-extension StockDetailHeaderView: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        metricViewModels.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MetricCollectionViewCell.identifier, for: indexPath) as? MetricCollectionViewCell else { fatalError() }
-        let viewModel = metricViewModels[indexPath.row]
-        cell.configure(with: viewModel)
-        return cell
+        updateDataSource(with: metricViewModels)
     }
 }
 

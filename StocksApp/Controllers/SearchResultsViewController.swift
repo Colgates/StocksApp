@@ -45,7 +45,7 @@ class SearchResultsViewController: UIViewController {
     }
     
     private func configureDataSource() {
-        dataSource = UITableViewDiffableDataSource<Section, SearchResult>(tableView: tableView, cellProvider: { tableView, indexPath, model in
+        dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { tableView, indexPath, model in
             let cell = tableView.dequeueReusableCell(withIdentifier: SearchResultTableViewCell.identifier, for: indexPath)
             var configuration = cell.defaultContentConfiguration()
             configuration.text = model.displaySymbol
@@ -55,7 +55,7 @@ class SearchResultsViewController: UIViewController {
         })
     }
     
-    private func updateDataSource(with results: [SearchResult]) {
+    func updateDataSource(with results: [SearchResult]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, SearchResult>()
         snapshot.appendSections([.main])
         snapshot.appendItems(results)

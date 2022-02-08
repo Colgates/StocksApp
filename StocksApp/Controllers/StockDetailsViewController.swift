@@ -60,6 +60,15 @@ class StockDetailsViewController: UIViewController {
         tableView.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: view.width, height: view.height / 2))
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        DispatchQueue.main.async {
+            if self.metrics != nil {
+                self.renderChart()
+            }
+        }
+    }
+    
     private func setUpCloseButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeButtonTapped))
     }
@@ -112,7 +121,7 @@ class StockDetailsViewController: UIViewController {
         }
         
         group.notify(queue: .main) { [weak self] in
-//            self?.renderChart()
+            self?.renderChart()
         }
     }
     
@@ -128,7 +137,7 @@ class StockDetailsViewController: UIViewController {
         
         let changePercentage = getChangePercentage(data: candleStickData)
         
-        headerView.configure(chartViewModel: .init(data: candleStickData.reversed().map { $0.close }, showLegend: false, showAxis: true, fillColor: changePercentage < 0 ? .systemRed : .systemGreen), metricViewModels: viewModels)
+        headerView.configure(chartViewModel: .init(data: candleStickData.map { $0.close }, showLegend: false, showAxis: true, fillColor: changePercentage < 0 ? .systemRed : .systemGreen), metricViewModels: viewModels)
         
         tableView.tableHeaderView = headerView
     }

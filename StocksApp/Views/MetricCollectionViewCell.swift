@@ -11,7 +11,7 @@ class MetricCollectionViewCell: UICollectionViewCell {
     
     static let identifier = "MetricCollectionViewCell"
     
-    struct ViewModel {
+    struct ViewModel: Hashable {
         let name: String
         let value: String
     }

@@ -20,7 +20,7 @@ class WatchListViewController: UIViewController {
         case main
     }
     
-    private var dataSource: UITableViewDiffableDataSource<Section, WatchListTableViewCell.ViewModel>?
+    private var dataSource: DataSource?
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -66,7 +66,7 @@ class WatchListViewController: UIViewController {
     }
     
     private func configureDataSource() {
-        dataSource = UITableViewDiffableDataSource<Section, WatchListTableViewCell.ViewModel>(tableView: tableView, cellProvider: { tableView, indexPath, model in
+        dataSource = DataSource(tableView: tableView, cellProvider: { tableView, indexPath, model in
             guard let cell = tableView.dequeueReusableCell(withIdentifier: WatchListTableViewCell.identifier, for: indexPath) as? WatchListTableViewCell else { fatalError() }
             cell.configure(with: model)
             return cell
@@ -84,8 +84,8 @@ class WatchListViewController: UIViewController {
         let symbols = PersistenceManager.shared.watchList
         
         let group = DispatchGroup()
-        
         for symbol in symbols {
+            
             group.enter()
             Task {
                 defer { group.leave() }
@@ -119,7 +119,6 @@ class WatchListViewController: UIViewController {
             ))
         }
         let sorted = viewModels.sorted(by: { $0.symbol < $1.symbol })
-//        self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })
         updateDataSource(with: sorted)
     }
     
@@ -152,7 +151,7 @@ class WatchListViewController: UIViewController {
     
     private func setUpObserver() {
         observer = NotificationCenter.default.addObserver(forName: .didAddToWatchList, object: nil, queue: .main, using: { [weak self] _ in
-//            self?.viewModels.removeAll()
+            self?.watchlistMap.removeAll()
             self?.setUpWatchlistData()
         })
     }
@@ -218,15 +217,21 @@ extension WatchListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         WatchListTableViewCell.preferredHeight
     }
-    
-//    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-//
-//        if editingStyle == .delete {
-//            PersistenceManager.shared.removeFromWatchList(symbol: viewModels[indexPath.row].symbol)
-//            viewModels.remove(at: indexPath.row)
-//            tableView.deleteRows(at: [indexPath], with: .fade)
-//        }
-//    }
+}
+
+class DataSource: UITableViewDiffableDataSource<WatchListViewController.Section, WatchListTableViewCell.ViewModel>{
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            var snapshot = snapshot()
+            if let item = itemIdentifier(for: indexPath) {
+                PersistenceManager.shared.removeFromWatchList(symbol: item.symbol)
+                DispatchQueue.main.async {
+                    snapshot.deleteItems([item])
+                    self.apply(snapshot, animatingDifferences: true)
+                }
+            }
+        }
+    }
 }
 
 class MyFloatingPanelLayout: FloatingPanelLayout {
