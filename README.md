@@ -1,5 +1,5 @@
 # StocksApp
-![alt text](Img/StocksApp Frame 1920_1080.webp)
+![alt text](Img/StocksApp_Frame_1920_1080.webp)
 # Description
 
 
