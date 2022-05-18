@@ -1,7 +1,7 @@
 # StocksApp
 ![alt text](img/StocksApp_Frame_1920_1080.webp)
 # Description
-
+![alt text](img/StocksApp.webm)
 
 ## Built With
 - Swift
